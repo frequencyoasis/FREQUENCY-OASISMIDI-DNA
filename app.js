@@ -253,6 +253,30 @@ else if(m.type==='compute'){postMessage({id:m.id,ok:true,result:session.compute(
     FO.app.ready = true;
   }
 
+  /* ---- install (PWA) ---- */
+  let deferredInstall = null;
+  const standalone = () => (window.matchMedia && matchMedia('(display-mode: standalone)').matches) || navigator.standalone === true;
+  window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredInstall = e; const b = document.getElementById('btnInstall'); if (b) b.hidden = false; });
+  window.addEventListener('appinstalled', () => { deferredInstall = null; const b = document.getElementById('btnInstall'); if (b) b.hidden = true; toast('Installed. Launch it from your apps.'); });
+  async function installHelp() {
+    const rows = [];
+    const ok = (t, good, note) => rows.push(`<li>${good ? '✅' : '⚠️'} <b>${t}</b>${note ? ' — ' + note : ''}</li>`);
+    ok('Secure origin (https)', location.protocol === 'https:' || location.hostname === 'localhost', location.origin);
+    let reg = null; try { reg = await navigator.serviceWorker.getRegistration(); } catch (e) {}
+    ok('Service worker', !!(reg && reg.active), reg ? (reg.active ? 'active, scope ' + reg.scope : 'registered but not active yet — reload once') : 'not registered');
+    let man = null; try { const l = document.querySelector('link[rel=manifest]'); const r = await fetch(l.href, { cache: 'no-store' }); man = r.ok ? await r.json() : null; } catch (e) {}
+    ok('Web app manifest', !!man, man ? man.name : 'could not be loaded');
+    if (man) { const sizes = (man.icons || []).map(i => i.sizes).join(' '); ok('Icons 192 and 512', /192x192/.test(sizes) && /512x512/.test(sizes), sizes); }
+    ok('Already running as an app', standalone(), standalone() ? 'you are in the installed window' : 'currently in a normal browser tab');
+    ok('Browser offered an install prompt', !!deferredInstall, deferredInstall ? 'press the Install button' : 'Chrome has not offered one (see below)');
+    const body = `<p class="note" style="margin-top:0">Install checks for this page:</p><ul class="list tight" style="list-style:none;padding:0">${rows.join('')}</ul>
+<h3>If there is no install prompt</h3><ul><li><b>Chrome / Edge:</b> menu ⋮ → <i>Cast, save and share</i> → <i>Install page as app</i> (or <i>Install Frequency Oasis…</i>). On Linux the omnibox icon only appears once the checks above pass.</li><li><b>Already installed once?</b> Chrome hides the prompt if this app is already installed — look in your app launcher.</li><li><b>Stale copy:</b> if you uploaded files after first visiting, open DevTools → Application → Storage → <i>Clear site data</i>, then reload twice.</li><li><b>Firefox desktop</b> cannot install web apps. <b>Safari iOS:</b> Share → Add to Home Screen.</li></ul>`;
+    $('#aboutBody').innerHTML = body; const d = $('#dlgAbout'); d.querySelector('h2').textContent = 'Install as an app'; d.showModal();
+    d.addEventListener('close', () => { d.querySelector('h2').textContent = 'About, privacy and honest limits'; }, { once: true });
+  }
+  const wireInstall = () => { const b = document.getElementById('btnInstall'); if (!b) return; if (standalone()) { b.hidden = true; return; } b.hidden = false; b.onclick = async () => { if (deferredInstall) { deferredInstall.prompt(); try { await deferredInstall.userChoice; } catch (e) {} deferredInstall = null; } else installHelp(); }; };
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', wireInstall); else wireInstall();
+
   FO.app = { S, $, esc, toast, tip, busy, nName, fmtT, analyzer, recompute, loadFile, loadBuffer, setSequence, setScope, toggleScopeTrack, effectiveTracks, trackName, go, selectNote, selectChord, auditionNote, seek, excite, togglePlay, openExport, openAbout, renderScope, flatsNow, NAV, ready: false };
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
 })();
