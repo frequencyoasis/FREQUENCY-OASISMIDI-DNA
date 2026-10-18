@@ -1,0 +1,22 @@
+{
+  "name": "Frequency Oasis — MIDI DNA",
+  "short_name": "MIDI DNA",
+  "description": "Local-first musical intelligence: import a MIDI file, see its key, chords, rhythm and structure, and hear it. Nothing is uploaded.",
+  "id": "./",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#08080b",
+  "theme_color": "#08080b",
+  "categories": ["music", "education", "utilities"],
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" },
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ],
+  "file_handlers": [
+    { "action": "./index.html", "accept": { "audio/midi": [".mid", ".midi"], "audio/x-midi": [".mid", ".midi"] } }
+  ]
+}

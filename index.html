@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Frequency Oasis — MIDI DNA</title>
+<meta name="description" content="MIDI DNA by Frequency Oasis — a local-first musical intelligence instrument. Import a MIDI file, see its key, chords, rhythm and structure, and hear it. Every note leaves evidence.">
+<meta name="theme-color" content="#08080b">
+<meta name="color-scheme" content="dark">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="icon" href="favicon-32.png" sizes="32x32" type="image/png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<a class="skip" href="#viewbody">Skip to content</a>
+<canvas id="ambient" aria-hidden="true"></canvas>
+
+<header class="mast">
+  <div class="brand" aria-label="Frequency Oasis, MIDI DNA">
+    <svg class="mark" viewBox="0 0 48 48" aria-hidden="true"><use href="#glyph"/></svg>
+    <div class="brand-text"><span class="brand-top">FREQUENCY OASIS</span><span class="brand-main">MIDI&nbsp;DNA</span></div>
+  </div>
+  <p class="tagline">Every note leaves evidence.</p>
+  <div class="mast-actions">
+    <span id="fileChip" class="chip file-chip" hidden></span>
+    <button class="btn" id="btnOpen" type="button">Open MIDI</button>
+    <button class="btn ghost" id="btnDemo" type="button" title="Generate a small original multitrack demo in your browser">Demo</button>
+    <button class="btn ghost" id="btnExport" type="button" disabled>Export</button>
+    <button class="btn ghost icon" id="btnLite" type="button" aria-pressed="false" title="Performance mode: fewer particles, 30 fps">Lite</button>
+    <button class="btn ghost icon" id="btnMotion" type="button" aria-pressed="false" title="Reduce motion">Calm</button>
+    <button class="btn ghost icon" id="btnAbout" type="button" aria-label="About, privacy and limits">?</button>
+  </div>
+</header>
+
+<nav class="nav" id="nav" aria-label="Sections"></nav>
+<div class="scope" id="scopeBar" hidden></div>
+
+<main id="main">
+  <section id="landing" class="landing">
+    <canvas id="heroHelix" aria-label="Dormant MIDI DNA helix. Load a MIDI file to encode it." role="img"></canvas>
+    <div class="landing-copy">
+      <p class="eyebrow">Musical intelligence laboratory</p>
+      <h1>Drop a MIDI file.<br><em>Watch it become a strand.</em></h1>
+      <p class="lede">MIDI DNA reads the notes, finds the key and the chords, measures the groove, maps the structure — and lets you hear every part. Everything is computed in your browser. Nothing is uploaded.</p>
+      <div class="landing-actions">
+        <button class="btn big" id="btnOpen2" type="button">Choose a .mid file</button>
+        <button class="btn big ghost" id="btnDemo2" type="button">Try the built-in demo</button>
+      </div>
+      <p class="fineprint">or drag a file anywhere on this page · formats 0, 1 and 2 · works offline once installed</p>
+      <div id="loadError" class="notice err" role="alert" hidden></div>
+    </div>
+  </section>
+
+  <section id="app" hidden>
+    <div id="busy" class="busy" hidden><span class="spin"></span><span id="busyText">Analysing…</span></div>
+    <div id="viewbody" tabindex="-1"></div>
+  </section>
+</main>
+
+<footer class="transport" id="transport" hidden>
+  <div class="t-btns">
+    <button class="tbtn" id="tStart" type="button" aria-label="Back to start" title="Home"><svg viewBox="0 0 24 24"><path d="M6 5h2v14H6zM20 5v14L9 12z"/></svg></button>
+    <button class="tbtn play" id="tPlay" type="button" aria-label="Play" title="Space"><svg viewBox="0 0 24 24" id="tPlayIcon"><path d="M8 5v14l11-7z"/></svg></button>
+    <button class="tbtn" id="tStop" type="button" aria-label="Stop"><svg viewBox="0 0 24 24"><path d="M6 6h12v12H6z"/></svg></button>
+    <button class="tbtn tog" id="tLoop" type="button" aria-pressed="false" aria-label="Loop the selected region" title="Loop region"><svg viewBox="0 0 24 24"><path d="M7 7h10v3l4-4-4-4v3H5v6h2zm10 10H7v-3l-4 4 4 4v-3h12v-6h-2z"/></svg></button>
+  </div>
+  <div class="t-time"><output id="tTime">0:00.0</output><span class="dim"> / </span><span id="tDur" class="dim">0:00</span></div>
+  <div class="t-pos"><span id="tBar">1.1</span><small>bar.beat</small></div>
+  <input id="tSeek" class="seek" type="range" min="0" max="1000" value="0" step="1" aria-label="Playback position">
+  <div class="t-pos"><span id="tBpm">120</span><small>BPM</small></div>
+  <label class="t-sel"><span>Speed</span><select id="tRate" aria-label="Playback speed"><option value="0.5">0.5×</option><option value="0.75">0.75×</option><option value="1" selected>1×</option><option value="1.25">1.25×</option><option value="1.5">1.5×</option></select></label>
+  <label class="t-vol"><span>Vol</span><input id="tVol" type="range" min="0" max="100" value="80" aria-label="Master volume"></label>
+  <canvas id="tMeter" width="60" height="22" aria-label="Live output level" role="img"></canvas>
+</footer>
+
+<div id="tip" class="tip" role="tooltip" hidden></div>
+<div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+<div id="dropVeil" class="veil" hidden><div><strong>Release to analyse</strong><span>.mid / .midi · processed locally</span></div></div>
+<input type="file" id="file" accept=".mid,.midi,audio/midi,audio/x-midi,audio/mid" hidden>
+
+<dialog id="dlgExport" class="dlg"><form method="dialog"><header><h2>Export</h2><button class="btn ghost icon" value="close" aria-label="Close">✕</button></header><div id="exportBody"></div></form></dialog>
+<dialog id="dlgAbout" class="dlg"><form method="dialog"><header><h2>About, privacy and honest limits</h2><button class="btn ghost icon" value="close" aria-label="Close">✕</button></header><div id="aboutBody"></div></form></dialog>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+  <symbol id="glyph" viewBox="0 0 48 48"><path d="M10 4c0 10 28 10 28 20S10 34 10 44M38 4c0 10-28 10-28 20s28 10 28 20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/><path d="M14 11h20M12.4 18.5h23.2M12.4 29.5h23.2M14 37h20" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" opacity=".6"/><circle cx="24" cy="24" r="2.4" fill="currentColor"/></symbol>
+</defs></svg>
+
+<noscript><p style="padding:2rem;color:#ece6d4">MIDI DNA needs JavaScript to read and analyse MIDI files in your browser.</p></noscript>
+
+<script src="theory.js"></script>
+<script src="midi-parser.js"></script>
+<script src="analysis-tonal.js"></script>
+<script src="analysis-motion.js"></script>
+<script src="analysis-character.js"></script>
+<script src="analysis-session.js"></script>
+<script src="audio-engine.js"></script>
+<script src="viz-core.js"></script>
+<script src="piano-roll.js"></script>
+<script src="viz-helix.js"></script>
+<script src="viz-chladni.js"></script>
+<script src="viz-geometry.js"></script>
+<script src="exports.js"></script>
+<script src="demo.js"></script>
+<script src="views.js"></script>
+<script src="views2.js"></script>
+<script src="views3.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
